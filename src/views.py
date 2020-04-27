@@ -12,9 +12,13 @@ STATE_HALT = -1
 
 
 def print_header(scr):
-    scr.addstr(0, 0, "+--------------------+")
-    scr.addstr(1, 0, "|  Welcome to MemoZ  |")
-    scr.addstr(2, 0, "+--------------------+")
+    welcome_msg = 'Welcome to MemoZ'
+    height, width = scr.getmaxyx()
+    bar = '+' + (width - 2) * '-' + '+'
+    spaces = (width - 2 - len(welcome_msg)) // 2 * ' '
+    scr.addstr(0, 0, bar)
+    scr.addstr(1, 0, '|' + spaces + welcome_msg + spaces + '|')
+    scr.addstr(2, 0, bar)
     return 4
 
 
