@@ -36,12 +36,16 @@ class Card(Base):
 
 def get_date_cards_queryset(today):
     session = session_gen()
-    return session.query(Card).filter(Card.ask_date <= today)
+    return session.query(Card).filter(Card.ask_date <= today), session
 
 
 def get_date_cards(today):
-    get_date_cards_queryset(today).all()
+    qs, session = get_date_cards_queryset(today)
+    return qs.all(), session
 
 
 def get_date_single_card(today):
-    get_date_cards_queryset(today).first()
+    qs, session = get_date_cards_queryset(today)
+    if qs.count() == 0:
+        return None, session
+    return qs.first(), session

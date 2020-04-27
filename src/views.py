@@ -1,3 +1,9 @@
+from _curses import KEY_SRESET
+from datetime import date
+
+from db import session_gen
+from models import get_date_single_card
+
 STATE_HOME = 0
 STATE_CARD = 1
 STATE_HALT = -1
@@ -23,7 +29,44 @@ def home_view(scr):
 
 
 def card_view(scr):
-    return STATE_HALT
+    card, session = get_date_single_card(date.today())
+    if card is None:
+        return STATE_HALT
+    show_answer = False
+
+    while True:
+        scr.clear()
+        current_line = print_header(scr)
+
+        scr.addstr(current_line, 0, "Q: {}".format(card.question))
+        current_line += 1
+
+        scr.addstr(current_line, 0, "A: {}".format(card.answer if show_answer else '?!?!'))
+        current_line += 2
+
+        scr.addstr(current_line, 0, "press <s> to show/hide answer")
+        current_line += 1
+
+        scr.addstr(current_line, 0, "press <y> if you remember the answer")
+        current_line += 1
+
+        scr.addstr(current_line, 0, "press <n> if you don't remember the answer")
+
+        scr.refresh()
+
+        key = scr.getkey()
+        if key == 's' or key == 'S':
+            show_answer = not show_answer
+        elif key == 'y' or key == 'Y':
+            correct = True
+            break
+        elif key == 'n' or key == 'N':
+            correct = False
+            break
+
+    card.apply_solution(correct)
+    session.commit()
+    return STATE_HOME
 
 
 view_funcs = dict()

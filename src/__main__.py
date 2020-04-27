@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 from curses import wrapper
+
+from db import migrate
 from views import view_funcs, STATE_HOME, STATE_HALT
 import curses
 
@@ -14,4 +16,5 @@ def main(stdscr):
         state = view_funcs[state](stdscr)
 
 
+migrate()
 wrapper(main)
