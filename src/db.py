@@ -4,11 +4,8 @@ from sqlalchemy.orm import sessionmaker
 
 engine = create_engine('sqlite:///:memory:', echo=True)
 Base = declarative_base()
+session_gen = sessionmaker(bind=engine)
 
 
 def migrate():
     Base.metadata.create_all(engine)
-
-
-def get_session():
-    return sessionmaker(bind=engine)

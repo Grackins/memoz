@@ -2,7 +2,7 @@ from datetime import timedelta, date
 from sqlalchemy import Column, Integer, String, Date
 from sqlalchemy.ext.declarative import declarative_base
 
-from db import get_session, Base
+from db import Base, session_gen
 
 duration = [0 for _ in range(20)]
 duration[0] = 0
@@ -35,7 +35,7 @@ class Card(Base):
 
 
 def get_date_cards_queryset(today):
-    session = get_session()()
+    session = session_gen()
     return session.query(Card).filter(Card.ask_date <= today)
 
 
