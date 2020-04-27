@@ -4,11 +4,11 @@ from sqlalchemy.ext.declarative import declarative_base
 
 from db import Base, session_gen
 
-duration = [0 for _ in range(20)]
-duration[0] = 0
-duration[1] = 1
+duration = list()
+duration.append(0)
+duration.append(1)
 for i in range(2, 20):
-    duration[i] = duration[i - 1] + duration[i - 2]
+    duration.append(duration[-1] + duration[-2])
 
 
 class Card(Base):
