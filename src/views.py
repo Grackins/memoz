@@ -1,11 +1,13 @@
+import curses
 from _curses import KEY_SRESET
 from datetime import date
 
 from db import session_gen
-from models import get_date_single_card
+from models import get_date_single_card, Card
 
 STATE_HOME = 0
 STATE_CARD = 1
+STATE_ADD = 2
 STATE_HALT = -1
 
 
@@ -20,28 +22,35 @@ def home_view(scr):
     scr.clear()
     current_line = print_header(scr)
     scr.addstr(current_line, 0, "cards are waiting 4 U")
+    current_line += 2
+    scr.addstr(current_line, 0, "press <s> to review a card")
     current_line += 1
-    scr.addstr(current_line, 0, "press any key to start")
+    scr.addstr(current_line, 0, "press <a> to add a card")
     scr.refresh()
 
-    scr.getkey()
-    return STATE_CARD
+    key = scr.getkey()
+    if key == 's':
+        return STATE_CARD
+    elif key == 'a':
+        return STATE_ADD
+    else:
+        return STATE_HALT
 
 
 def card_view(scr):
     card, session = get_date_single_card(date.today())
     if card is None:
-        return STATE_HALT
+        return STATE_HOME
     show_answer = False
 
     while True:
         scr.clear()
         current_line = print_header(scr)
 
-        scr.addstr(current_line, 0, "Q: {}".format(card.question))
+        scr.addstr(current_line, 0, "Q: {}".format(''.join(card.question)))
         current_line += 1
 
-        scr.addstr(current_line, 0, "A: {}".format(card.answer if show_answer else '?!?!'))
+        scr.addstr(current_line, 0, "A: {}".format(''.join(card.answer) if show_answer else '?!?!'))
         current_line += 2
 
         scr.addstr(current_line, 0, "press <s> to show/hide answer")
@@ -66,9 +75,39 @@ def card_view(scr):
 
     card.apply_solution(correct)
     session.commit()
+    session.close()
+    return STATE_HOME
+
+
+def add_view(scr):
+    scr.clear()
+    curses.curs_set(1)
+    current_line = print_header(scr)
+
+    scr.addstr(current_line, 0, "Enter the question:")
+    current_line += 1
+    scr.refresh()
+    question = scr.getstr(current_line, 0, 100)
+    current_line += 1
+
+    scr.addstr(current_line, 0, "Enter the question:")
+    current_line += 1
+    scr.refresh()
+    answer = scr.getstr(current_line, 0, 100)
+    current_line += 1
+
+    card = Card(question=question, answer=answer)
+    session = session_gen()
+    session.add(card)
+    session.commit()
+    session.close()
+
+    curses.curs_set(0)
+
     return STATE_HOME
 
 
 view_funcs = dict()
 view_funcs[STATE_HOME] = home_view
 view_funcs[STATE_CARD] = card_view
+view_funcs[STATE_ADD] = add_view

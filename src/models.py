@@ -22,9 +22,10 @@ class Card(Base):
     stage = Column(Integer)
 
     def __init__(self, *args, **kwargs):
-        inst = super().__init__(*args, **kwargs)
-        inst.creation_date = date.today()
-        inst.ask_date = date.today()
+        super().__init__(*args, **kwargs)
+        self.creation_date = date.today()
+        self.ask_date = date.today()
+        self.stage = 0
 
     def __repr__(self):
         return '<Card q="{}">'.format(self.question)
