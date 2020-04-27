@@ -1,11 +1,8 @@
 #!/usr/bin/env python3
-from curses import wrapper
+import curses
 
 from db import migrate
 from views import view_funcs, STATE_HOME, STATE_HALT
-import curses
-
-import time
 
 
 def main(stdscr):
@@ -17,4 +14,4 @@ def main(stdscr):
 
 
 migrate()
-wrapper(main)
+curses.wrapper(main)

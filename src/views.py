@@ -51,10 +51,10 @@ def card_view(scr):
         scr.clear()
         current_line = print_header(scr)
 
-        scr.addstr(current_line, 0, "Q: {}".format(''.join(card.question)))
+        scr.addstr(current_line, 0, "Q: {}".format(card.question.decode('utf-8')))
         current_line += 1
 
-        scr.addstr(current_line, 0, "A: {}".format(''.join(card.answer) if show_answer else '?!?!'))
+        scr.addstr(current_line, 0, "A: {}".format(card.answer.decode('utf-8') if show_answer else '?!?!'))
         current_line += 2
 
         scr.addstr(current_line, 0, "press <s> to show/hide answer")
@@ -84,6 +84,7 @@ def card_view(scr):
 
 
 def add_view(scr):
+    curses.echo()
     scr.clear()
     curses.curs_set(1)
     current_line = print_header(scr)
@@ -94,7 +95,7 @@ def add_view(scr):
     question = scr.getstr(current_line, 0, 100)
     current_line += 1
 
-    scr.addstr(current_line, 0, "Enter the question:")
+    scr.addstr(current_line, 0, "Enter the answer:")
     current_line += 1
     scr.refresh()
     answer = scr.getstr(current_line, 0, 100)
@@ -107,7 +108,7 @@ def add_view(scr):
     session.close()
 
     curses.curs_set(0)
-
+    curses.noecho()
     return STATE_HOME
 
 
