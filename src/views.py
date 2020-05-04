@@ -13,9 +13,7 @@ STATE_HALT = -1
 
 class BaseView(object):
     default_state = STATE_HOME
-
-    def __init__(self):
-        self.transitions = list()
+    transitions = list()
 
     def get_header(self, height, width):
         welcome_msg = 'Welcome to MemoZ'
@@ -67,21 +65,12 @@ def print_header(scr):
     return 4
 
 
-def home_view(scr):
-    scr.clear()
-    current_line = print_header(scr)
-    scr.addstr("cards are waiting 4 U\n\n")
-    scr.addstr("press <s> to review a card\n")
-    scr.addstr("press <a> to add a card\n")
-    scr.refresh()
-
-    key = scr.getkey()
-    if key == 's':
-        return STATE_CARD
-    elif key == 'a':
-        return STATE_ADD
-    else:
-        return STATE_HALT
+class HomeView(BaseView):
+    transitions = [
+        (['s'], STATE_CARD, 'review'),
+        (['a'], STATE_ADD, 'add'),
+        (['q'], STATE_HALT, 'quit'),
+    ]
 
 
 def card_view(scr):
