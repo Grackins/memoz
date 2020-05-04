@@ -72,6 +72,9 @@ class HomeView(BaseView):
         (['q'], STATE_HALT, 'quit'),
     ]
 
+    def get_body(self):
+        return 'Cards are waiting 4 you :D\n'
+
 
 def card_view(scr):
     card, session = get_date_single_card(date.today())
