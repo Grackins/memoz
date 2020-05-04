@@ -11,25 +11,68 @@ STATE_ADD = 2
 STATE_HALT = -1
 
 
+class BaseView(object):
+    default_state = STATE_HOME
+
+    def __init__(self):
+        self.transitions = list()
+
+    def get_header(self, height, width):
+        welcome_msg = 'Welcome to MemoZ'
+
+        bar = '+' + (width - 2) * '-' + '+'
+
+        right_spaces = left_spaces = (width - 2 - len(welcome_msg)) // 2 * ' '
+        if (width - len(welcome_msg)) % 2 == 1:
+            right_spaces += ' '
+        mid_line = '|' + left_spaces + welcome_msg + right_spaces + '|'
+
+        return f'{bar}' \
+               f'{mid_line}' \
+               f'{bar}'
+
+    def get_body(self):
+        return ''
+
+    def get_help(self):
+        help_text = ''
+        for keys, state, description in self.transitions:
+            key = '|'.join(keys)
+            help_text += f'{key}: {description}\n'
+        return help_text
+
+    def render(self, scr):
+        scr.clear()
+        scr.addstr(self.get_header(*scr.getmaxyx()))
+        scr.addstr('\n')
+        scr.addstr(self.get_body())
+        scr.addstr('\n')
+        scr.addstr(self.get_help())
+        scr.refresh()
+
+    def handle_action(self, key):
+        for keys, state in self.transitions:
+            if key in keys:
+                return state
+        return self.default_state
+
+    def handle(self, scr):
+        self.render(scr)
+        key = scr.getkey()
+        return self.handle_action(key)
+
+
 def print_header(scr):
-    welcome_msg = 'Welcome to MemoZ'
-    height, width = scr.getmaxyx()
-    bar = '+' + (width - 2) * '-' + '+'
-    spaces = (width - 2 - len(welcome_msg)) // 2 * ' '
-    scr.addstr(0, 0, bar)
-    scr.addstr(1, 0, '|' + spaces + welcome_msg + spaces + '|')
-    scr.addstr(2, 0, bar)
+    scr.addstr(BaseView().get_header(*scr.getmaxyx()))
     return 4
 
 
 def home_view(scr):
     scr.clear()
     current_line = print_header(scr)
-    scr.addstr(current_line, 0, "cards are waiting 4 U")
-    current_line += 2
-    scr.addstr(current_line, 0, "press <s> to review a card")
-    current_line += 1
-    scr.addstr(current_line, 0, "press <a> to add a card")
+    scr.addstr("cards are waiting 4 U\n\n")
+    scr.addstr("press <s> to review a card\n")
+    scr.addstr("press <a> to add a card\n")
     scr.refresh()
 
     key = scr.getkey()
