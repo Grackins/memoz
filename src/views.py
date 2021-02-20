@@ -4,6 +4,7 @@ from datetime import date
 
 from db import session_gen
 from models import get_date_single_card, Card
+from utils import interaction_mode
 
 STATE_HOME = 0
 STATE_CARD = 1
@@ -11,9 +12,12 @@ STATE_ADD = 2
 STATE_HALT = -1
 
 
-class BaseView(object):
-    default_state = STATE_HOME
-    transitions = list()
+class BaseView:
+    def __init__(self, scr):
+        self.scr = scr
+
+    def handle():
+        raise Exception('Not implemented error')
 
     def get_header(self, height, width):
         welcome_msg = 'Welcome to MemoZ'
@@ -29,6 +33,17 @@ class BaseView(object):
                f'{mid_line}' \
                f'{bar}'
 
+    @classmethod
+    def as_view(cls):
+        def view_func(scr):
+            return cls(scr).handle()
+        return view_func
+
+
+class KeyResponsedView(BaseView):
+    default_state = STATE_HOME
+    transitions = list()
+
     def get_body(self):
         return ''
 
@@ -36,10 +51,11 @@ class BaseView(object):
         help_text = ''
         for keys, state, description in self.transitions:
             key = '|'.join(keys)
-            help_text += f'{key}: {description}\n'
+            help_text += f'{key}) {description}\n'
         return help_text
 
-    def render(self, scr):
+    def render(self):
+        scr = self.scr
         scr.clear()
         scr.addstr(self.get_header(*scr.getmaxyx()))
         scr.addstr('\n')
@@ -49,23 +65,18 @@ class BaseView(object):
         scr.refresh()
 
     def handle_action(self, key):
-        for keys, state in self.transitions:
+        for keys, state, _ in self.transitions:
             if key in keys:
                 return state
         return self.default_state
 
-    def handle(self, scr):
-        self.render(scr)
-        key = scr.getkey()
+    def handle(self):
+        self.render()
+        key = self.scr.getkey()
         return self.handle_action(key)
 
 
-def print_header(scr):
-    scr.addstr(BaseView().get_header(*scr.getmaxyx()))
-    return 4
-
-
-class HomeView(BaseView):
+class HomeView(KeyResponsedView):
     transitions = [
         (['s'], STATE_CARD, 'review'),
         (['a'], STATE_ADD, 'add'),
@@ -76,78 +87,74 @@ class HomeView(BaseView):
         return 'Cards are waiting 4 you :D\n'
 
 
-def card_view(scr):
-    card, session = get_date_single_card(date.today())
-    if card is None:
+class CardView(KeyResponsedView):
+    transitions = [
+        (['y'], STATE_CARD, 'remember'),
+        (['n'], STATE_HOME, 'forget'),
+        (['s'], None, 'show/hide answer'),
+        (['q'], STATE_HOME, 'home'),
+    ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.card, self.session = get_date_single_card(date.today())
+        self.show_answer = False
+
+    def handle_action(self, key):
+        if key == 's':
+            self.show_answer = not self.show_answer
+            return self.handle()
+        if key in 'ny':
+            correct = key == 'y'
+            self.card.apply_solution(correct)
+            self.session.commit()
+            self.session.close()
+        return super().handle_action(key)
+
+    def get_body(self):
+        question_line = 'Q: {}'.format(self.card.question.decode('utf-8'))
+        if self.show_answer:
+            answer_line = 'A: {}'.format(self.card.answer.decode('utf-8'))
+        else:
+            answer_line = 'A: ?'
+        return f'{question_line}\n{answer_line}\n'
+
+    def handle(self):
+        if self.card:
+            return super().handle()
         return STATE_HOME
-    show_answer = False
 
-    while True:
+
+class AddCardView(BaseView):
+    @interaction_mode
+    def handle(self):
+        scr = self.scr
         scr.clear()
-        current_line = print_header(scr)
 
-        scr.addstr(current_line, 0, "Q: {}".format(card.question.decode('utf-8')))
-        current_line += 1
+        scr.addstr(self.get_header(*scr.getmaxyx()))
+        scr.addstr('\n')
 
-        scr.addstr(current_line, 0, "A: {}".format(card.answer.decode('utf-8') if show_answer else '?!?!'))
-        current_line += 2
+        scr.addstr('Add a new card!\n\n')
 
-        scr.addstr(current_line, 0, "press <s> to show/hide answer")
-        current_line += 1
-
-        scr.addstr(current_line, 0, "press <y> if you remember the answer")
-        current_line += 1
-
-        scr.addstr(current_line, 0, "press <n> if you don't remember the answer")
-
+        scr.addstr('Q: ')
         scr.refresh()
+        question = scr.getstr(100)
 
-        key = scr.getkey()
-        if key == 's' or key == 'S':
-            show_answer = not show_answer
-        elif key == 'y' or key == 'Y':
-            correct = True
-            break
-        elif key == 'n' or key == 'N':
-            correct = False
-            break
+        scr.addstr('A: ')
+        scr.refresh()
+        answer = scr.getstr(100)
 
-    card.apply_solution(correct)
-    session.commit()
-    session.close()
-    return STATE_HOME
+        card = Card(question=question, answer=answer)
+        session = session_gen()
+        session.add(card)
+        session.commit()
+        session.close()
+
+        return STATE_HOME
 
 
-def add_view(scr):
-    curses.echo()
-    scr.clear()
-    curses.curs_set(1)
-    current_line = print_header(scr)
-
-    scr.addstr(current_line, 0, "Enter the question:")
-    current_line += 1
-    scr.refresh()
-    question = scr.getstr(current_line, 0, 100)
-    current_line += 1
-
-    scr.addstr(current_line, 0, "Enter the answer:")
-    current_line += 1
-    scr.refresh()
-    answer = scr.getstr(current_line, 0, 100)
-    current_line += 1
-
-    card = Card(question=question, answer=answer)
-    session = session_gen()
-    session.add(card)
-    session.commit()
-    session.close()
-
-    curses.curs_set(0)
-    curses.noecho()
-    return STATE_HOME
-
-
-view_funcs = dict()
-view_funcs[STATE_HOME] = home_view
-view_funcs[STATE_CARD] = card_view
-view_funcs[STATE_ADD] = add_view
+view_funcs = {
+    STATE_HOME: HomeView.as_view(),
+    STATE_CARD: CardView.as_view(),
+    STATE_ADD: AddCardView.as_view(),
+}

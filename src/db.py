@@ -3,7 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import os
 
-engine = create_engine(f'sqlite:////home/{os.getenv("USER")}/.memoz/default.sqlite3', echo=True)
+engine = create_engine(f'sqlite:////home/{os.getenv("USER")}/.memoz/default.sqlite3', echo=False)
 Base = declarative_base()
 session_gen = sessionmaker(bind=engine)
 
