@@ -1,3 +1,4 @@
+import random
 from datetime import timedelta, date
 from sqlalchemy import Column, Integer, String, Date
 from sqlalchemy.ext.declarative import declarative_base
@@ -49,4 +50,4 @@ def get_date_single_card(today):
     qs, session = get_date_cards_queryset(today)
     if qs.count() == 0:
         return None, session
-    return qs.first(), session
+    return random.choice(qs.all()), session
