@@ -3,7 +3,7 @@ from _curses import KEY_SRESET
 from datetime import date
 
 from db import session_gen
-from models import get_date_single_card, Card
+from models import get_date_cards_queryset, get_date_single_card, Card
 from utils import interaction_mode
 
 STATE_HOME = 0
@@ -83,8 +83,17 @@ class HomeView(KeyResponsedView):
         (['q'], STATE_HALT, 'quit'),
     ]
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        cards_qs, session = get_date_cards_queryset(date.today())
+        self.cards_cnt = cards_qs.count()
+        session.close()
+
     def get_body(self):
-        return 'Cards are waiting 4 you :D\n'
+        if self.cards_cnt == 1:
+            return '1 card is waiting 4 you :D\n'
+        else:
+            return f'{self.cards_cnt} cards are waiting 4 you :D\n'
 
 
 class CardView(KeyResponsedView):
