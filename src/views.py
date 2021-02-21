@@ -145,8 +145,8 @@ class StatsView(KeyResponsedView):
 
 class CardReviewView(KeyResponsedView):
     transitions = [
-        (['y'], STATE_REVIEW_OLD_CARD, 'Remember'),
-        (['n'], STATE_HOME, 'Forget'),
+        (['y'], None, 'Remember'),  # Should be set in subclasses
+        (['n'], None, 'Forget'),    # Should be set in subclasses
         (['s'], None, 'Show/Hide Answer'),
         (['q'], STATE_HOME, 'Go Home'),
     ]
@@ -186,6 +186,13 @@ class CardReviewView(KeyResponsedView):
 
 
 class NewCardReviewView(CardReviewView):
+    transitions = [
+        (['y'], STATE_REVIEW_NEW_CARD, 'Remember'),
+        (['n'], STATE_REVIEW_NEW_CARD, 'Forget'),
+        (['s'], None, 'Show/Hide Answer'),
+        (['q'], STATE_HOME, 'Go Home'),
+    ]
+
     def init_data(self):
         super().init_data()
         cards_qs, self.session = get_date_cards_queryset(date.today())
@@ -194,6 +201,13 @@ class NewCardReviewView(CardReviewView):
 
 
 class OldCardReviewView(CardReviewView):
+    transitions = [
+        (['y'], STATE_REVIEW_OLD_CARD, 'Remember'),
+        (['n'], STATE_REVIEW_OLD_CARD, 'Forget'),
+        (['s'], None, 'Show/Hide Answer'),
+        (['q'], STATE_HOME, 'Go Home'),
+    ]
+
     def init_data(self):
         cards_qs, self.session = get_date_cards_queryset(date.today())
         cards_qs = cards_qs.filter(Card.stage > 0)
