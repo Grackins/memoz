@@ -121,12 +121,13 @@ class CardView(KeyResponsedView):
         return super().handle_action(key)
 
     def get_body(self):
+        status = f'id:{self.card.id} -- level:{self.card.stage}'
         question_line = 'Q: {}'.format(self.card.question.decode('utf-8'))
         if self.show_answer:
             answer_line = 'A: {}'.format(self.card.answer.decode('utf-8'))
         else:
             answer_line = 'A: ?'
-        return f'{question_line}\n{answer_line}\n'
+        return f'{status}\n\n{question_line}\n{answer_line}\n'
 
     def handle(self):
         if self.card:
