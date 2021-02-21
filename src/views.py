@@ -152,13 +152,17 @@ class AddCardView(BaseView):
 
         scr.addstr('A: ')
         scr.refresh()
-        answer = scr.getstr(100)
+        answer = scr.getstr(200)
 
-        card = Card(question=question, answer=answer)
-        session = session_gen()
-        session.add(card)
-        session.commit()
-        session.close()
+        scr.addstr('\nPress <Enter> to keep the card.')
+        key = scr.getch()
+        scr.refresh()
+        if key == ord('\n'):
+            card = Card(question=question, answer=answer)
+            session = session_gen()
+            session.add(card)
+            session.commit()
+            session.close()
 
         return STATE_HOME
 
