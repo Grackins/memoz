@@ -196,8 +196,8 @@ class NewCardReviewView(CardReviewView):
     def init_data(self):
         super().init_data()
         cards_qs, self.session = get_date_cards_queryset(date.today())
-        cards_qs = cards_qs.filter(Card.stage == 0)
-        self.card = random.choice(cards_qs.all())
+        cards_qs = cards_qs.filter(Card.stage == 0).all()
+        self.card = random.choice(cards_qs) if cards_qs else None
 
 
 class OldCardReviewView(CardReviewView):
@@ -210,8 +210,8 @@ class OldCardReviewView(CardReviewView):
 
     def init_data(self):
         cards_qs, self.session = get_date_cards_queryset(date.today())
-        cards_qs = cards_qs.filter(Card.stage > 0)
-        self.card = random.choice(cards_qs.all())
+        cards_qs = cards_qs.filter(Card.stage > 0).all()
+        self.card = random.choice(cards_qs) if cards_qs else None
 
 
 class AddCardView(BaseView):
