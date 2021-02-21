@@ -1,4 +1,5 @@
 import curses
+import random
 from datetime import date
 
 from db import session_gen
@@ -6,9 +7,10 @@ from models import get_date_cards_queryset, get_date_single_card, Card
 from utils import interaction_mode
 
 STATE_HOME = 0
-STATE_CARD = 1
-STATE_ADD = 2
-STATE_STATS = 3
+STATE_REVIEW_OLD_CARD = 1
+STATE_REVIEW_NEW_CARD = 2
+STATE_ADD = 3
+STATE_STATS = 4
 STATE_HALT = -1
 
 
@@ -78,7 +80,8 @@ class KeyResponsedView(BaseView):
 
 class HomeView(KeyResponsedView):
     transitions = [
-        (['r'], STATE_CARD, 'Review'),
+        (['o'], STATE_REVIEW_OLD_CARD, 'Review Old Card'),
+        (['f'], STATE_REVIEW_NEW_CARD, 'Review Fresh Card'),
         (['a'], STATE_ADD, 'Add'),
         (['s'], STATE_STATS, 'Stats'),
         (['q'], STATE_HALT, 'Quit'),
@@ -87,14 +90,16 @@ class HomeView(KeyResponsedView):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         cards_qs, session = get_date_cards_queryset(date.today())
-        self.cards_cnt = cards_qs.count()
+        self.new_cards_cnt = cards_qs.filter(Card.stage == 0).count()
+        self.old_cards_cnt = cards_qs.filter(Card.stage > 0).count()
         session.close()
 
     def get_body(self):
-        if self.cards_cnt == 1:
+        if self.old_cards_cnt + self.new_cards_cnt == 1:
             return '1 card is waiting 4 you :D\n'
         else:
-            return f'{self.cards_cnt} cards are waiting 4 you :D\n'
+            return f'{self.old_cards_cnt}+{self.new_cards_cnt} ' \
+                    'cards are waiting 4 you :D\n'
 
 
 class StatsView(KeyResponsedView):
@@ -138,9 +143,9 @@ class StatsView(KeyResponsedView):
         self.session.close()
 
 
-class CardView(KeyResponsedView):
+class CardReviewView(KeyResponsedView):
     transitions = [
-        (['y'], STATE_CARD, 'Remember'),
+        (['y'], STATE_REVIEW_OLD_CARD, 'Remember'),
         (['n'], STATE_HOME, 'Forget'),
         (['s'], None, 'Show/Hide Answer'),
         (['q'], STATE_HOME, 'Go Home'),
@@ -148,8 +153,11 @@ class CardView(KeyResponsedView):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.card, self.session = get_date_single_card(date.today())
+        self.init_data()
         self.show_answer = False
+
+    def init_data():
+        self.card, seld.session = None, None
 
     def handle_action(self, key):
         if key == 's':
@@ -175,6 +183,21 @@ class CardView(KeyResponsedView):
         if self.card:
             return super().handle()
         return STATE_HOME
+
+
+class NewCardReviewView(CardReviewView):
+    def init_data(self):
+        super().init_data()
+        cards_qs, self.session = get_date_cards_queryset(date.today())
+        cards_qs = cards_qs.filter(Card.stage == 0)
+        self.card = random.choice(cards_qs.all())
+
+
+class OldCardReviewView(CardReviewView):
+    def init_data(self):
+        cards_qs, self.session = get_date_cards_queryset(date.today())
+        cards_qs = cards_qs.filter(Card.stage > 0)
+        self.card = random.choice(cards_qs.all())
 
 
 class AddCardView(BaseView):
@@ -211,7 +234,8 @@ class AddCardView(BaseView):
 
 view_funcs = {
     STATE_HOME: HomeView.as_view(),
-    STATE_CARD: CardView.as_view(),
+    STATE_REVIEW_OLD_CARD: OldCardReviewView.as_view(),
+    STATE_REVIEW_NEW_CARD: NewCardReviewView.as_view(),
     STATE_ADD: AddCardView.as_view(),
     STATE_STATS: StatsView.as_view(),
 }
