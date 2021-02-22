@@ -32,7 +32,7 @@ class Card(Base):
         return '<Card q="{}">'.format(self.question)
 
     def apply_solution(self, correct: bool):
-        self.stage = self.stage + 1 if correct else 1
+        self.stage = self.stage + 1 if correct else 0
         self.ask_date = date.today() + timedelta(days=duration[self.stage])
 
 
