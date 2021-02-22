@@ -156,7 +156,7 @@ class CardReviewView(KeyResponsedView):
         self.init_data()
         self.show_answer = False
 
-    def init_data():
+    def init_data(self):
         self.card, seld.session = None, None
 
     def handle_action(self, key):
@@ -194,7 +194,6 @@ class NewCardReviewView(CardReviewView):
     ]
 
     def init_data(self):
-        super().init_data()
         cards_qs, self.session = get_date_cards_queryset(date.today())
         cards_qs = cards_qs.filter(Card.stage == 0).all()
         self.card = random.choice(cards_qs) if cards_qs else None
