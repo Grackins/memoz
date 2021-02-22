@@ -1,6 +1,6 @@
 import random
 from datetime import timedelta, date
-from sqlalchemy import Column, Integer, String, Date
+from sqlalchemy import Column, Integer, String, Date, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 
 from db import Base, session_gen
@@ -21,6 +21,7 @@ class Card(Base):
     creation_date = Column(Date)
     ask_date = Column(Date)
     stage = Column(Integer)
+    in_queue = Column(Boolean, default=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -34,20 +35,9 @@ class Card(Base):
     def apply_solution(self, correct: bool):
         self.stage = self.stage + 1 if correct else 0
         self.ask_date = date.today() + timedelta(days=duration[self.stage])
+        self.in_queue = False
 
 
 def get_date_cards_queryset(today):
     session = session_gen()
     return session.query(Card).filter(Card.ask_date <= today), session
-
-
-def get_date_cards(today):
-    qs, session = get_date_cards_queryset(today)
-    return qs.all(), session
-
-
-def get_date_single_card(today):
-    qs, session = get_date_cards_queryset(today)
-    if qs.count() == 0:
-        return None, session
-    return random.choice(qs.all()), session

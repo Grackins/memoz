@@ -3,7 +3,7 @@ import random
 from datetime import date
 
 from db import session_gen
-from models import get_date_cards_queryset, get_date_single_card, Card
+from models import get_date_cards_queryset, Card
 from utils import interaction_mode
 
 STATE_HOME = 0
@@ -90,8 +90,8 @@ class HomeView(KeyResponsedView):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         cards_qs, session = get_date_cards_queryset(date.today())
-        self.new_cards_cnt = cards_qs.filter(Card.stage == 0).count()
-        self.old_cards_cnt = cards_qs.filter(Card.stage > 0).count()
+        self.new_cards_cnt = cards_qs.filter(Card.in_queue == True).count()
+        self.old_cards_cnt = cards_qs.filter(Card.in_queue == False).count()
         session.close()
 
     def get_body(self):
@@ -147,6 +147,7 @@ class CardReviewView(KeyResponsedView):
     transitions = [
         (['y'], None, 'Remember'),  # Should be set in subclasses
         (['n'], None, 'Forget'),    # Should be set in subclasses
+        (['p'], None, 'Postpone'),  # Should be set in subclasses
         (['s'], None, 'Show/Hide Answer'),
         (['q'], STATE_HOME, 'Go Home'),
     ]
@@ -189,13 +190,14 @@ class NewCardReviewView(CardReviewView):
     transitions = [
         (['y'], STATE_REVIEW_NEW_CARD, 'Remember'),
         (['n'], STATE_REVIEW_NEW_CARD, 'Forget'),
+        (['p'], STATE_REVIEW_NEW_CARD, 'Postpone'),
         (['s'], None, 'Show/Hide Answer'),
         (['q'], STATE_HOME, 'Go Home'),
     ]
 
     def init_data(self):
         cards_qs, self.session = get_date_cards_queryset(date.today())
-        cards_qs = cards_qs.filter(Card.stage == 0).all()
+        cards_qs = cards_qs.filter(Card.in_queue == True).all()
         self.card = random.choice(cards_qs) if cards_qs else None
 
 
@@ -203,13 +205,14 @@ class OldCardReviewView(CardReviewView):
     transitions = [
         (['y'], STATE_REVIEW_OLD_CARD, 'Remember'),
         (['n'], STATE_REVIEW_OLD_CARD, 'Forget'),
+        (['p'], STATE_REVIEW_OLD_CARD, 'Postpone'),
         (['s'], None, 'Show/Hide Answer'),
         (['q'], STATE_HOME, 'Go Home'),
     ]
 
     def init_data(self):
         cards_qs, self.session = get_date_cards_queryset(date.today())
-        cards_qs = cards_qs.filter(Card.stage > 0).all()
+        cards_qs = cards_qs.filter(Card.in_queue == False).all()
         self.card = random.choice(cards_qs) if cards_qs else None
 
 
