@@ -120,9 +120,9 @@ class StatsView(KeyResponsedView):
         while cnt[-1] == 0:
             cnt.pop()
 
-        header_line = ''
-        sep_line = ''
-        count_line = ''
+        header_line =   ' Stage '
+        sep_line =      '       '
+        count_line =    '   #   '
         field_format = '{:^5d}'
 
         for i, c in enumerate(cnt):
@@ -132,12 +132,15 @@ class StatsView(KeyResponsedView):
         header_line += '|'
         sep_line += '+'
         count_line += '|'
+
+        total_line = f'{sum(cnt)} cards in total'
         
         return f'{sep_line}\n' \
                 f'{header_line}\n' \
                 f'{sep_line}\n' \
                 f'{count_line}\n' \
-                f'{sep_line}\n'
+                f'{sep_line}\n\n' \
+                f'{total_line}\n'
 
     def __del__(self):
         self.session.close()
