@@ -33,7 +33,13 @@ class Card(Base):
         return '<Card q="{}">'.format(self.question)
 
     def apply_solution(self, correct: bool):
-        self.stage = self.stage + 1 if correct else 0
+        if correct:
+            length = (date.today() - self.ask_date).days + duration[self.stage]
+            self.stage = 0
+            while duration[self.stage] <= length:
+                self.stage += 1
+        else:
+            self.stage = 0
         self.ask_date = date.today() + timedelta(days=duration[self.stage])
         self.in_queue = False
 
