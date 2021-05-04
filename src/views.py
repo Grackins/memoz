@@ -176,9 +176,9 @@ class CardReviewView(KeyResponsedView):
 
     def get_body(self):
         status = f'id:{self.card.id} -- level:{self.card.stage}'
-        question_line = 'Q: {}'.format(self.card.question.decode('utf-8'))
+        question_line = 'Q: {}'.format(str(self.card.question))
         if self.show_answer:
-            answer_line = 'A: {}'.format(self.card.answer.decode('utf-8'))
+            answer_line = 'A: {}'.format(str(self.card.answer))
         else:
             answer_line = 'A: ?'
         return f'{status}\n\n{question_line}\n{answer_line}\n'
@@ -232,11 +232,11 @@ class AddCardView(BaseView):
 
         scr.addstr('Q: ')
         scr.refresh()
-        question = scr.getstr(100)
+        question = scr.getstr(100).decode()
 
         scr.addstr('A: ')
         scr.refresh()
-        answer = scr.getstr(200)
+        answer = scr.getstr(200).decode()
 
         scr.addstr('\nPress <Enter> to keep the card.')
         key = scr.getch()
