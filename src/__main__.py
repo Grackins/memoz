@@ -2,7 +2,8 @@
 import curses
 
 from db import migrate
-from views import view_funcs, STATE_HOME, STATE_HALT
+from views import view_funcs
+from views.states import STATE_HOME, STATE_HALT
 
 
 def main(stdscr):
