@@ -5,6 +5,7 @@ from db import session_gen
 from models import get_date_cards_queryset, Card
 from utils import interaction_mode
 
+
 STATE_HOME = 0
 STATE_REVIEW_OLD_CARD = 1
 STATE_REVIEW_NEW_CARD = 2
@@ -94,8 +95,12 @@ class HomeView(KeyResponsedView):
         session.close()
 
     def get_body(self):
-        if self.old_cards_cnt + self.new_cards_cnt == 1:
-            return '1 card is waiting 4 you :D\n'
+        total_cards_cnt = self.old_cards_cnt + self.new_cards_cnt
+        if total_cards_cnt == 0:
+            return f'Congratulations!!! YOU ARE ALL DONE!!!'
+        elif total_cards_cnt == 1:
+            return f'{self.old_cards_cnt}+{self.new_cards_cnt} ' \
+                    'card is waiting 4 you :D\n'
         else:
             return f'{self.old_cards_cnt}+{self.new_cards_cnt} ' \
                     'cards are waiting 4 you :D\n'
