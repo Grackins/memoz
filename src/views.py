@@ -1,4 +1,3 @@
-import curses
 import random
 from datetime import date
 
@@ -90,8 +89,8 @@ class HomeView(KeyResponsedView):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         cards_qs, session = get_date_cards_queryset(date.today())
-        self.new_cards_cnt = cards_qs.filter(Card.in_queue == True).count()
-        self.old_cards_cnt = cards_qs.filter(Card.in_queue == False).count()
+        self.new_cards_cnt = cards_qs.filter(Card.in_queue == 'true').count()
+        self.old_cards_cnt = cards_qs.filter(Card.in_queue == 'false').count()
         session.close()
 
     def get_body(self):
@@ -112,7 +111,6 @@ class StatsView(KeyResponsedView):
         self.session = session_gen()
         self.cards_qs = self.session.query(Card).all()
 
-
     def get_body(self):
         cnt = [0] * 20
         for card in self.cards_qs:
@@ -120,9 +118,9 @@ class StatsView(KeyResponsedView):
         while cnt[-1] == 0:
             cnt.pop()
 
-        header_line =   ' Stage '
-        sep_line =      '       '
-        count_line =    '   #   '
+        header_line = ' Stage '
+        sep_line = '       '
+        count_line = '   #   '
         field_format = '{:^5d}'
 
         for i, c in enumerate(cnt):
@@ -134,13 +132,13 @@ class StatsView(KeyResponsedView):
         count_line += '|'
 
         total_line = f'{sum(cnt)} cards in total'
-        
+
         return f'{sep_line}\n' \
-                f'{header_line}\n' \
-                f'{sep_line}\n' \
-                f'{count_line}\n' \
-                f'{sep_line}\n\n' \
-                f'{total_line}\n'
+            f'{header_line}\n' \
+            f'{sep_line}\n' \
+            f'{count_line}\n' \
+            f'{sep_line}\n\n' \
+            f'{total_line}\n'
 
     def __del__(self):
         self.session.close()
@@ -161,7 +159,7 @@ class CardReviewView(KeyResponsedView):
         self.show_answer = False
 
     def init_data(self):
-        self.card, seld.session = None, None
+        self.card, self.session = None, None
 
     def handle_action(self, key):
         if key == 's':
@@ -200,7 +198,7 @@ class NewCardReviewView(CardReviewView):
 
     def init_data(self):
         cards_qs, self.session = get_date_cards_queryset(date.today())
-        cards_qs = cards_qs.filter(Card.in_queue == True).all()
+        cards_qs = cards_qs.filter(Card.in_queue == 'true').all()
         self.card = random.choice(cards_qs) if cards_qs else None
 
 
@@ -215,8 +213,11 @@ class OldCardReviewView(CardReviewView):
 
     def init_data(self):
         cards_qs, self.session = get_date_cards_queryset(date.today())
-        cards_qs = cards_qs.filter(Card.in_queue == False).all()
+        cards_qs = cards_qs.filter(Card.in_queue == 'false').all()
         self.card = random.choice(cards_qs) if cards_qs else None
+
+    def render(self):
+        super().render()
 
 
 class AddCardView(BaseView):
