@@ -25,7 +25,7 @@ class HomeView(KeyResponsedView):
     def get_body(self):
         total_cards_cnt = self.old_cards_cnt + self.new_cards_cnt
         if total_cards_cnt == 0:
-            return f'Congratulations!!! YOU ARE ALL DONE!!!'
+            return f'Congratulations!!! YOU ARE ALL DONE!!!\n'
         elif total_cards_cnt == 1:
             return f'{self.old_cards_cnt}+{self.new_cards_cnt} ' \
                     'card is waiting 4 you :D\n'
