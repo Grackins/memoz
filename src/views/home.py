@@ -18,8 +18,8 @@ class HomeView(KeyResponsedView):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         cards_qs, session = get_date_cards_queryset(date.today())
-        self.new_cards_cnt = cards_qs.filter(Card.in_queue == 'true').count()
-        self.old_cards_cnt = cards_qs.filter(Card.in_queue == 'false').count()
+        self.new_cards_cnt = cards_qs.filter(Card.in_queue == True).count()
+        self.old_cards_cnt = cards_qs.filter(Card.in_queue == False).count()
         session.close()
 
     def get_body(self):

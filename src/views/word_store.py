@@ -10,7 +10,7 @@ class WordStoreView(BaseView):
 
     def init_data(self):
         cards_qs, session = get_date_cards_queryset(date.today())
-        cards = cards_qs.filter(Card.in_queue == 'true')\
+        cards = cards_qs.filter(Card.in_queue == True)\
                         .order_by(Card.creation_date)\
                         .all()
         self.remaining = (cards, 0, 0)

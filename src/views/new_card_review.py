@@ -17,5 +17,5 @@ class NewCardReviewView(CardReviewView):
 
     def init_data(self):
         cards_qs, self.session = get_date_cards_queryset(date.today())
-        cards_qs = cards_qs.filter(Card.in_queue == 'true').all()
+        cards_qs = cards_qs.filter(Card.in_queue == True).all()
         self.card = random.choice(cards_qs) if cards_qs else None
