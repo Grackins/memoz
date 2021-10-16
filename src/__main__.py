@@ -3,6 +3,7 @@ import curses
 import argparse
 
 from db import migrate
+from exporter import export_data
 from views import view_funcs
 from views.states import STATE_SINGLE_CARD_REVIEW, STATE_HOME, STATE_HALT
 
@@ -31,8 +32,17 @@ parser.add_argument(
     action='store_true',
     help='migrate models into database',
 )
+parser.add_argument(
+    '--export',
+    dest='export',
+    action='store_true',
+    help='export data as json',
+)
 args = parser.parse_args()
 
 if args.migrate:
     migrate()
+if args.export:
+    export_data()
+    exit(0)
 curses.wrapper(main)
