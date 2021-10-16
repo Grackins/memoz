@@ -23,15 +23,20 @@ class CardReviewView(KeyResponsedView):
         if key == 's':
             self.show_answer = not self.show_answer
             return self.handle()
-        if key in 'ny':
-            correct = key == 'y'
-            self.card.apply_solution(correct)
+        if key in 'nyp':
+            if key == 'p':
+                self.card.postpone()
+            else:
+                correct = key == 'y'
+                self.card.apply_solution(correct)
             self.session.commit()
             self.session.close()
         return super().handle_action(key)
 
     def get_body(self):
-        status = f'id:{self.card.id} -- level:{self.card.stage}'
+        power = self.card.get_power().total_seconds() / (24 * 60 * 60)
+        power = '%.2f' % power
+        status = f'id:{self.card.id} -- power:{power}'
         question_line = 'Q: {}'.format(str(self.card.question))
         if self.show_answer:
             answer_line = 'A: {}'.format(str(self.card.answer))

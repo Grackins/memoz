@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import datetime
 
 from .key_responsed import KeyResponsedView
 from .states import STATE_REVIEW_OLD_CARD, STATE_REVIEW_NEW_CARD,\
@@ -17,7 +17,7 @@ class HomeView(KeyResponsedView):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        cards_qs, session = get_date_cards_queryset(date.today())
+        cards_qs, session = get_date_cards_queryset(datetime.now())
         self.new_cards_cnt = cards_qs.filter(Card.in_queue == True).count()
         self.old_cards_cnt = cards_qs.filter(Card.in_queue == False).count()
         session.close()

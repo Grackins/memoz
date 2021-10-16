@@ -1,5 +1,4 @@
-from datetime import date
-import random
+from datetime import datetime
 
 from .card_review import CardReviewView
 from .states import STATE_REVIEW_OLD_CARD, STATE_HOME
@@ -16,6 +15,7 @@ class OldCardReviewView(CardReviewView):
     ]
 
     def init_data(self):
-        cards_qs, self.session = get_date_cards_queryset(date.today())
-        cards_qs = cards_qs.filter(Card.in_queue == False).all()
-        self.card = random.choice(cards_qs) if cards_qs else None
+        cards_qs, self.session = get_date_cards_queryset(datetime.now())
+        self.card = cards_qs.filter(Card.in_queue == False)\
+            .order_by(Card.ask_date)\
+            .first()
