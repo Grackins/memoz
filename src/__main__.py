@@ -4,6 +4,7 @@ import argparse
 
 from db import migrate
 from exporter import export_data
+from importer import import_data
 from views import view_funcs
 from views.states import STATE_SINGLE_CARD_REVIEW, STATE_HOME, STATE_HALT
 
@@ -34,15 +35,24 @@ parser.add_argument(
 )
 parser.add_argument(
     '--export',
-    dest='export',
+    dest='export_data',
     action='store_true',
     help='export data as json',
+)
+parser.add_argument(
+    '--import',
+    dest='import_data',
+    action='store_true',
+    help='import data as json',
 )
 args = parser.parse_args()
 
 if args.migrate:
     migrate()
-if args.export:
+if args.export_data:
     export_data()
+    exit(0)
+if args.import_data:
+    import_data()
     exit(0)
 curses.wrapper(main)

@@ -20,9 +20,14 @@ class CardExporter:
                 self.date_format,
             ),
             'ask_date': self.card.ask_date.strftime(
-                self.date_format,
+                self.datetime_format,
             ),
-            'stage': card.stage,
+            'pask_date': self.card.pask_date.strftime(
+                self.datetime_format,
+            ),
+            'ppask_date': self.card.ppask_date.strftime(
+                self.datetime_format,
+            ),
             'in_queue': card.in_queue,
         }
 
@@ -33,3 +38,4 @@ def export_data():
     for card in session.query(Card).all():
         cards.append(CardExporter(card).export())
     print(json.dumps(cards))
+    session.close()
