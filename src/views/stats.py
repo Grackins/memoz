@@ -22,7 +22,7 @@ class StatsView(KeyResponsedView):
         for card in self.cards_qs:
             power = card.get_power()
             if card.in_queue:
-                power = 0
+                power = timedelta(0)
             ptr = 0
             while power > timedelta(self.powers[ptr]):
                 ptr += 1
