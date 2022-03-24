@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from sqlalchemy import Column, Integer, String, Date, Boolean, DateTime
 
 from db import Base, session_gen
@@ -35,8 +35,11 @@ class Card(Base):
             self.pask_date = saved_ask_date
         else:
             self.ask_date = now
-            self.pask_date += (now - self.pask_date) / 2
-            self.ppask_date = self.ppask_date
+            if self.in_queue:
+                self.pask_date = now - timedelta(days=.5)
+            else:
+                self.pask_date = now - (now - self.pask_date) / 2
+            self.ppask_date = self.pask_date
         self.in_queue = False
 
     def postpone(self):
